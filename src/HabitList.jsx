@@ -6,13 +6,33 @@ function HabitList() {
   const [habits, setHabits] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editHabit, setEditHabit] = useState(null);
+  const [progress, setProgress] = useState({});
 
   const fetchHabits = () => {
     fetch("http://localhost:8080/habits")
       .then((res) => res.json())
-      .then((data) => setHabits(data))
+      .then((data) => {
+        setHabits(data)
+        fetchProgress(data);
+      })
       .catch((error) => console.error("Error al cargar los hábitos:", error));
   };
+
+  const fetchProgress = (habits) => {
+    const promises = habits.map((habit) =>
+      fetch(`http://localhost:8080/habits/${habit.id}/progress`)
+        .then((res) => res.json())
+        .then((count) => ({id: habit.id, count}))
+    );
+
+    Promise.all(promises).then((results) => {
+      const map = {};
+      results.forEach((item) => {
+        map[item.id] = item.count;
+      });
+      setProgress(map);
+    });
+  }
 
   // POST
   const handleAdd = () => {
@@ -76,7 +96,7 @@ function HabitList() {
               </div>
               <div className="modal-body">
                 <HabitForm
-                  onHabitAdded={fetchHabits}
+                  onSubmit={fetchHabits}
                   onClose={() => setShowForm(false)}
                   initialData={editHabit}
                 />
@@ -93,6 +113,9 @@ function HabitList() {
               <div className="card-body">
                 <h5 className="card-title">{habit.name}</h5>
                 <p className="card-text">{habit.description}</p>
+                <p className="card-text">
+                  Progreso: {progress[habit.id] || 0} completados
+                </p>
                 <button
                   className="btn btn-primary me-2"
                   onClick={() => handleEdit(habit)}
