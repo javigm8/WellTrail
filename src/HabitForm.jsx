@@ -45,7 +45,6 @@ function HabitForm({ onSubmit, onClose, initialData }) {
 
   return (
     <form onSubmit={handleSubmit} className="mb-4">
-      <h4>{initialData ? "Editar hábito" : "Añadir nuevo hábito"}</h4>
       <div className="mb-3">
         <label className="form-label">Nombre</label>
         <input
